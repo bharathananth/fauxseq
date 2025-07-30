@@ -1,0 +1,15 @@
+Package: fauxseq
+Type: Package
+Title: Generate Artificial High-throughput Timeseries Datasets
+Version: 0.1.0
+Authors@R: c(
+    person("Bharath", "Ananthasubramaniam", , "bharath.ananthasubramaniam@hu-berlin.de", role = c("aut", "cre", "cph"))
+  )
+Description: More about what it does (maybe more than one line).
+    Continuation lines should be indented.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Imports:
+    MASS
+RoxygenNote: 7.3.2
