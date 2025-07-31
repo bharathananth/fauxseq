@@ -7,12 +7,12 @@
 drop_counts(y, N)
 }
 \arguments{
-\item{y}{A integer vector to downsample.}
+\item{y}{An integer vector to downsample.}
 
-\item{N}{A integer scalar.}
+\item{N}{An integer scalar.}
 }
 \value{
-A integer vector.
+An integer vector.
 }
 \description{
 Reduce the total column of a sample by downsampling

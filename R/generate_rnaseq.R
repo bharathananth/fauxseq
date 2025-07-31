@@ -1,24 +1,24 @@
-#' Generate rhythmic count RNA-seq data
+#' Generate rhythmic RNA-seq count data
 #'
-#' Generate rhythmic count RNA-seq data with same properties of a reference
+#' Generate rhythmic RNA-seq count data with same properties of a reference
 #' dataset.
 #'
 #' @param t A numeric vector.
 #' @param reps NULL or numeric scalar or numeric vector with the same length as
-#'   `t`
-#' @param period A numeric scalar
+#'   `t`.
+#' @param period A numeric scalar.
 #' @param n_genes An integer.
 #' @param rhy_frac A fraction between 0 and 1.
 #' @param min_A_effect A positive numeric scalar.
-#' @param A_spread A positive numeric scalar
+#' @param A_spread A positive numeric scalar.
 #' @param emp_dist A data.frame with two columns containing the empirical mu
-#'   (means) and empirical size (reciprocal of dispersion)
+#'   (means) and empirical size (reciprocal of dispersion).
 #' @param depth A positive integer.
 #' @param lib_size_var A numeric vector of two positive elements.
 #' @param seed A positive integer.
 #'
 #' @returns A list containing a integer matrix, a data.frame of feature
-#'   properties and a numeric vector of sampling times.
+#'   properties and a data.frame of the sample data.
 #' @export
 #'
 generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
@@ -32,26 +32,31 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
                                 depth = 1e7,
                                 lib_size_var = c(0.8, 1.2),
                                 seed = NULL) {
-  if (!is.null(seed)) set.seed(seed)
+  if (!is.null(seed))
+    set.seed(seed)
+
   if (is.null(reps)) {
     reps <- rep_len(1, length(t))
   } else {
-    if (length(reps) != length(t)) {
-      stop("The length of timepoints and replicates do not match.")
-    }
+    stopifnot((length(reps) == 1) || (length(reps) == length(t)))
   }
-  t <- rep(t, times = reps)
 
+  n_rhy <- round(rhy_frac * n_genes)
+
+  t <- rep(t, times = reps)
   N <- length(t)
+
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
-  A <- matrix((1 + min_A_effect + stats::rexp(n_genes, A_spread)),
-                nrow = n_genes)
+
+  A <- matrix((1 + min_A_effect + stats::rexp(n_genes, A_spread)), nrow = n_genes)
   A[!G_rhy] <- 1.0
   phi <- matrix(stats::runif(n_genes) * 2 * pi * G_rhy, nrow = n_genes)
-  params <- data.frame(rhy_genes = which(G_rhy), A = A[G_rhy], phi = phi[G_rhy])
+  params <- data.frame(id = which(G_rhy),
+                       A = A[G_rhy],
+                       phi = phi[G_rhy])
 
   t_pattern <- cos(phi) %*% cos(2 * pi * t / period) +
-                  sin(phi) %*% sin(2 * pi * t / period)
+    sin(phi) %*% sin(2 * pi * t / period)
 
   lib_size_fct <- stats::runif(N, min = lib_size_var[1], max = lib_size_var[2])
   lib_size <- lib_size_fct * depth
@@ -66,8 +71,153 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
 
   mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
-  counts <- matrix(mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
-                   nrow = n_genes, byrow = FALSE)
+  counts <- matrix(
+    mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
+    nrow = n_genes,
+    byrow = FALSE,
+    dimnames = list(id = paste0("g", seq(n_genes)), samples = replicate(N, paste0(
+      sample(letters, 5), collapse = ""
+    )))
+  )
 
-  return(list(counts = counts, params = params, t = t))
+  exp_design <- data.frame(time = t, row.names = colnames(counts))
+
+  return(list(
+    counts = counts,
+    params = params,
+    exp_design = exp_design
+  ))
+}
+
+#' Generate rhythmic RNA-seq count data under two conditions
+#'
+#' Generate rhythmic RNA-seq count data under two conditions with both changes
+#' in rhythms and mean expression.
+#'
+#' @param t A numeric vector
+#' @param reps NULL or numeric scalar or numeric vector with the same length as
+#'   `t`
+#' @param period A numeric scalar.
+#' @param n_genes An integer.
+#' @param rhy_frac A fraction between 0 and 1.
+#' @param min_A_effect A positive numeric scalar.
+#' @param A_spread A positive numeric scalar.
+#' @param DE_frac A fraction between 0 and 1.
+#' @param min_DE_effect A positive numeric scalar.
+#' @param DE_spread A positive numeric scalar.
+#' @param groups A character vector of length 2.
+#' @param emp_dist A data.frame with two columns containing the empirical mu
+#'   (means) and empirical size (reciprocal of dispersion)
+#' @param depth A positive integer.
+#' @param lib_size_var A numeric vector of two positive elements.
+#' @param seed A positive integer.
+#'
+#' @returns A list containing a integer matrix, a data.frame of feature
+#'   properties and a data.frame of the sample data.
+#' @export
+#'
+generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
+                                    reps = NULL,
+                                    period = 24,
+                                    n_genes = 10000,
+                                    rhy_frac = 0.1,
+                                    min_A_effect = 0.0,
+                                    A_spread = 1,
+                                    DE_frac = 0.1,
+                                    min_DE_effect = 0.5,
+                                    DE_spread = 1,
+                                    groups = c("ctrl", "expt"),
+                                    emp_dist = NULL,
+                                    depth = 1e7,
+                                    lib_size_var = c(0.8, 1.2),
+                                    seed = NULL) {
+  if (!is.null(seed))
+    set.seed(seed)
+
+  if (is.null(reps)) {
+    reps <- rep_len(1, length(t))
+  } else {
+    stopifnot((length(reps) == 1) || (length(reps) == length(t)))
+  }
+
+  t <- rep(t, times = reps)
+
+  N <- length(t)
+
+  G_rhy <- (stats::runif(n_genes) <= rhy_frac)
+  DR_groups <- sample(c("gain", "loss", "change", "same"), sum(G_rhy), replace = TRUE)
+  A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
+  A[!G_rhy, ] <- 1.0
+  G_rhy_index <- which(G_rhy)
+  for (i in seq_along(DR_groups)) {
+    if (DR_groups[i] == "gain")
+      A[G_rhy_index[i], 1] = 1.0
+    else if (DR_groups[i] == "loss")
+      A[G_rhy_index[i], 2] = 1.0
+    else if (DR_groups[i] == "same")
+      A[G_rhy_index[i], 1] = A[G_rhy_index[i], 2]
+  }
+  phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
+  params <- data.frame(
+    id = paste0("g", which(G_rhy)),
+    category = DR_groups,
+    A_1 = log2(A[G_rhy, 1]),
+    A_2 = log2(A[G_rhy, 2]),
+    phi_1 = phi[G_rhy, 1],
+    phi_2 = phi[G_rhy, 1]
+  )
+  colnames(params) <- c("id", "category", paste0(rep(c("A", "phi"), each =
+                                                       2), "_", rep(groups, 2)))
+
+  t_pattern <- cbind(
+    cos(phi[, 1, drop = FALSE]) %*% cos(2 * pi * t / period) +
+      sin(phi[, 1, drop = FALSE]) %*% sin(2 * pi * t / period),
+    cos(phi[, 2, drop = FALSE]) %*% cos(2 * pi * t / period) +
+      sin(phi[, 2, drop = FALSE]) %*% sin(2 * pi * t / period)
+  )
+
+  G_DE <- (stats::runif(n_genes) <= DE_frac)
+  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)), nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
+  DE_effects[!G_DE] <- 1.0
+  params_de <- data.frame(id = paste0("g", which(G_DE)),
+                          DE_effect = log2(DE_effects[G_DE]))
+
+  params <- merge(params, params_de, by = "id", all = TRUE)
+
+  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1], max = lib_size_var[2])
+  lib_size <- lib_size_fct * depth
+
+  draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
+
+  size <- matrix(emp_dist$size[draw], nrow = n_genes)
+  size <- size[, rep(1, 2 * N)]
+
+  lambda <- matrix(emp_dist$mu[draw], nrow = n_genes)
+
+  DE_effects <- cbind(rep(1, n_genes), DE_effects)
+
+  lambda <- lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] * A[, rep(c(1, 2), each = N)]^t_pattern
+
+  mu <- sweep(lambda, 2, colSums(lambda) / lib_size[1:N], FUN = "/")
+
+  counts <- matrix(
+    mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
+    nrow = n_genes,
+    byrow = FALSE,
+    dimnames = list(id = paste0("g", seq(n_genes)),
+                    samples = replicate(2 * N, paste0(sample(letters, 5),
+                                                      collapse = "")))
+  )
+
+  exp_design <- data.frame(
+    time = rep(t, 2),
+    group = rep(groups, each = N),
+    row.names = colnames(counts)
+  )
+
+  return(list(
+    counts = counts,
+    params = params,
+    exp_design = exp_design
+  ))
 }

@@ -13,11 +13,10 @@ downsample <- function(counts) {
 
 #' Reduce the total column of a sample by downsampling
 #'
-#' @param y A integer vector to downsample.
-#' @param N A integer scalar.
+#' @param y An integer vector to downsample.
+#' @param N An integer scalar.
 #'
-#' @returns A integer vector.
-#' @export
+#' @returns An integer vector.
 #'
 drop_counts <- function(y, N) {
   total <- sum(y)

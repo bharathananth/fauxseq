@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_rnaseq.R
 \name{generate_rhy_rnaseq}
 \alias{generate_rhy_rnaseq}
-\title{Generate rhythmic count RNA-seq data}
+\title{Generate rhythmic RNA-seq count data}
 \usage{
 generate_rhy_rnaseq(
   t = seq(0, 20, 4),
@@ -22,9 +22,9 @@ generate_rhy_rnaseq(
 \item{t}{A numeric vector.}
 
 \item{reps}{NULL or numeric scalar or numeric vector with the same length as
-`t`}
+`t`.}
 
-\item{period}{A numeric scalar}
+\item{period}{A numeric scalar.}
 
 \item{n_genes}{An integer.}
 
@@ -32,10 +32,10 @@ generate_rhy_rnaseq(
 
 \item{min_A_effect}{A positive numeric scalar.}
 
-\item{A_spread}{A positive numeric scalar}
+\item{A_spread}{A positive numeric scalar.}
 
 \item{emp_dist}{A data.frame with two columns containing the empirical mu
-(means) and empirical size (reciprocal of dispersion)}
+(means) and empirical size (reciprocal of dispersion).}
 
 \item{depth}{A positive integer.}
 
@@ -45,9 +45,9 @@ generate_rhy_rnaseq(
 }
 \value{
 A list containing a integer matrix, a data.frame of feature
-  properties and a numeric vector of sampling times.
+  properties and a data.frame of the sample data.
 }
 \description{
-Generate rhythmic count RNA-seq data with same properties of a reference
+Generate rhythmic RNA-seq count data with same properties of a reference
 dataset.
 }
