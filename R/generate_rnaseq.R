@@ -52,7 +52,7 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
   A[!G_rhy] <- 1.0
   phi <- matrix(stats::runif(n_genes) * 2 * pi * G_rhy, nrow = n_genes)
   params <- data.frame(id = which(G_rhy),
-                       A = A[G_rhy],
+                       A = log2(A[G_rhy]),
                        phi = phi[G_rhy])
 
   t_pattern <- cos(phi) %*% cos(2 * pi * t / period) +
