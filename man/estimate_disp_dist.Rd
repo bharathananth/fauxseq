@@ -4,10 +4,12 @@
 \alias{estimate_disp_dist}
 \title{Estimate the mean-dispersion of count dataset}
 \usage{
-estimate_disp_dist(counts)
+estimate_disp_dist(counts, parallel = TRUE, ncores = NULL)
 }
 \arguments{
-\item{counts}{A integer matrix}
+\item{counts}{A integer matrix.}
+
+\item{parallel}{A boolean.}
 }
 \value{
 A data.frame of mean and size of negative binomial fits.

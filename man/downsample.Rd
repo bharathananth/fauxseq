@@ -4,10 +4,14 @@
 \alias{downsample}
 \title{Downsample all samples to have same number of reads as the smallest sample}
 \usage{
-downsample(counts)
+downsample(counts, parallel = TRUE, ncores = NULL)
 }
 \arguments{
 \item{counts}{An integer matrix.}
+
+\item{parallel}{A boolean.}
+
+\item{ncores}{An integer.}
 }
 \value{
 An integer matrix

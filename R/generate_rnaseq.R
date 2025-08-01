@@ -41,6 +41,10 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
     stopifnot((length(reps) == 1) || (length(reps) == length(t)))
   }
 
+  if (is.null(emp_dist)) {
+    emp_dist <- Mm_liver_LD_NC
+  }
+
   n_rhy <- round(rhy_frac * n_genes)
 
   t <- rep(t, times = reps)
@@ -140,6 +144,10 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
     stopifnot((length(reps) == 1) || (length(reps) == length(t)))
   }
 
+  if (is.null(emp_dist)) {
+    emp_dist <- Mm_liver_LD_NC
+  }
+
   t <- rep(t, times = reps)
 
   N <- length(t)
@@ -177,14 +185,16 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
   )
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
-  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)), nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
+  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)),
+                       nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
   DE_effects[!G_DE] <- 1.0
   params_de <- data.frame(id = paste0("g", which(G_DE)),
                           DE_effect = log2(DE_effects[G_DE]))
 
   params <- merge(params, params_de, by = "id", all = TRUE)
 
-  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1], max = lib_size_var[2])
+  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1],
+                               max = lib_size_var[2])
   lib_size <- lib_size_fct * depth
 
   draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)

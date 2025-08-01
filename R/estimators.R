@@ -6,8 +6,10 @@
 #' @returns A data.frame of mean and size of negative binomial fits.
 #' @export
 #'
-estimate_disp_dist <- function(counts, parallel = TRUE, ncores=NULL) {
-  counts <- downsample(counts, parallel = parallel, ncores=ncores)
+estimate_disp_dist <- function(counts,
+                               parallel = TRUE,
+                               ncores = NULL) {
+  counts <- downsample(counts, parallel = parallel, ncores = ncores)
   ests <- apply(counts, 1, nb_fit)
   final_ests <- t(ests) |>
     stats::na.omit() |>

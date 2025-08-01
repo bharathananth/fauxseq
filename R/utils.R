@@ -11,7 +11,6 @@
 downsample <- function(counts,
                        parallel = TRUE,
                        ncores = NULL) {
-
   min_lib_size <- min(colSums(counts))
   old_plan <- future::plan()
 
@@ -27,12 +26,14 @@ downsample <- function(counts,
   }
 
   # Perform parallel apply
-  downsampled_counts <- future.apply::future_apply(counts,
-                                                   MARGIN = 2,
-                                                   FUN = drop_counts,
-                                                   N = min_lib_size,
-                                                   future.packages = "fauxseq",
-                                                   future.seed = TRUE)
+  downsampled_counts <- future.apply::future_apply(
+    counts,
+    MARGIN = 2,
+    FUN = drop_counts,
+    N = min_lib_size,
+    future.packages = "fauxseq",
+    future.seed = TRUE
+  )
 
   # Reset plan to original (to not break parent/global state)
   future::plan(old_plan)
