@@ -1,12 +1,13 @@
 #' Estimate the mean-dispersion of count dataset
 #'
-#' @param counts A integer matrix
+#' @param counts A integer matrix.
+#' @param parallel A boolean.
 #'
 #' @returns A data.frame of mean and size of negative binomial fits.
 #' @export
 #'
-estimate_disp_dist <- function(counts) {
-  counts <- downsample(counts)
+estimate_disp_dist <- function(counts, parallel = TRUE, ncores=NULL) {
+  counts <- downsample(counts, parallel = parallel, ncores=ncores)
   ests <- apply(counts, 1, nb_fit)
   final_ests <- t(ests) |>
     stats::na.omit() |>
@@ -25,11 +26,11 @@ nb_fit <- function(x) {
   if (stats::var(x) < mean(x)) {
     return(c(size = 1e6, mu = mean(x)))
   }
-  tryCatch(
-    {
-      m <- mean(x)
-      v <- stats::var(x)
-      suppressWarnings(fit <- MASS::fitdistr(
+  tryCatch({
+    m <- mean(x)
+    v <- stats::var(x)
+    suppressWarnings(
+      fit <- MASS::fitdistr(
         x,
         "negative binomial",
         method = "Brent",
@@ -37,11 +38,10 @@ nb_fit <- function(x) {
         mu = m,
         lower = 0,
         upper = 1e6
-      ))
-      return(c(size = fit$estimate, mu = m))
-    },
-    error = function(e) {
-      return(c(size = NA, mu = NA))
-    }
-  )
+      )
+    )
+    return(c(size = fit$estimate, mu = m))
+  }, error = function(e) {
+    return(c(size = NA, mu = NA))
+  })
 }
