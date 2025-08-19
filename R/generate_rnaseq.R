@@ -156,6 +156,8 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
   DR_groups <- sample(c("gain", "loss", "change", "same"), sum(G_rhy), replace = TRUE)
   A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
   A[!G_rhy, ] <- 1.0
+  phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
+
   G_rhy_index <- which(G_rhy)
   for (i in seq_along(DR_groups)) {
     if (DR_groups[i] == "gain")
@@ -164,15 +166,15 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
       A[G_rhy_index[i], 2] = 1.0
     else if (DR_groups[i] == "same")
       A[G_rhy_index[i], 1] = A[G_rhy_index[i], 2]
+      phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
   }
-  phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
   params <- data.frame(
     id = paste0("g", which(G_rhy)),
     category = DR_groups,
     A_1 = log2(A[G_rhy, 1]),
     A_2 = log2(A[G_rhy, 2]),
     phi_1 = phi[G_rhy, 1],
-    phi_2 = phi[G_rhy, 1]
+    phi_2 = phi[G_rhy, 2]
   )
   colnames(params) <- c("id", "category", paste0(rep(c("A", "phi"), each =
                                                        2), "_", rep(groups, 2)))
