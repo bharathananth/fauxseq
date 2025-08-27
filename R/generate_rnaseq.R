@@ -26,10 +26,10 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
                                 period = 24,
                                 n_genes = 10000,
                                 rhy_frac = 0.1,
-                                min_A_effect = 0.0,
+                                min_A_effect = 0.5,
                                 A_spread = 1,
                                 emp_dist = NULL,
-                                depth = 1e7,
+                                depth = 4e7,
                                 lib_size_var = c(0.8, 1.2),
                                 seed = NULL) {
   if (!is.null(seed))
@@ -79,9 +79,9 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)), samples = replicate(N, paste0(
-      sample(letters, 5), collapse = ""
-    )))
+    dimnames = list(id = paste0("g", seq(n_genes)),
+                    samples = replicate(N, paste0(sample(letters, 5),
+                                                  collapse = "")))
   )
 
   exp_design <- data.frame(time = t, row.names = colnames(counts))
@@ -125,14 +125,14 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
                                     period = 24,
                                     n_genes = 10000,
                                     rhy_frac = 0.1,
-                                    min_A_effect = 0.0,
+                                    min_A_effect = 0.5,
                                     A_spread = 1,
                                     DE_frac = 0.1,
                                     min_DE_effect = 0.5,
                                     DE_spread = 1,
                                     groups = c("ctrl", "expt"),
                                     emp_dist = NULL,
-                                    depth = 1e7,
+                                    depth = 4e7,
                                     lib_size_var = c(0.8, 1.2),
                                     seed = NULL) {
   if (!is.null(seed))
@@ -166,7 +166,7 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
       A[G_rhy_index[i], 2] = 1.0
     else if (DR_groups[i] == "same")
       A[G_rhy_index[i], 1] = A[G_rhy_index[i], 2]
-      phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
+    phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
   }
   params <- data.frame(
     id = paste0("g", which(G_rhy)),
@@ -187,16 +187,14 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
   )
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
-  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)),
-                       nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
+  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)), nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
   DE_effects[!G_DE] <- 1.0
   params_de <- data.frame(id = paste0("g", which(G_DE)),
                           DE_effect = log2(DE_effects[G_DE]))
 
   params <- merge(params, params_de, by = "id", all = TRUE)
 
-  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1],
-                               max = lib_size_var[2])
+  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1], max = lib_size_var[2])
   lib_size <- lib_size_fct * depth
 
   draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
@@ -210,15 +208,15 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
 
   lambda <- lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] * A[, rep(c(1, 2), each = N)]^t_pattern
 
-  mu <- sweep(lambda, 2, colSums(lambda) / lib_size[1:N], FUN = "/")
+  mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
   counts <- matrix(
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)),
-                    samples = replicate(2 * N, paste0(sample(letters, 5),
-                                                      collapse = "")))
+    dimnames = list(id = paste0("g", seq(n_genes)), samples = replicate(2 * N, paste0(
+      sample(letters, 5), collapse = ""
+    )))
   )
 
   exp_design <- data.frame(
