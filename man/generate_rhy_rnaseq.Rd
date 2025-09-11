@@ -10,10 +10,10 @@ generate_rhy_rnaseq(
   period = 24,
   n_genes = 10000,
   rhy_frac = 0.1,
-  min_A_effect = 0,
+  min_A_effect = 0.5,
   A_spread = 1,
   emp_dist = NULL,
-  depth = 1e+07,
+  depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
   seed = NULL
 )

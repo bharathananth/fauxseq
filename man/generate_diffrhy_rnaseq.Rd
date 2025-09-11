@@ -10,14 +10,14 @@ generate_diffrhy_rnaseq(
   period = 24,
   n_genes = 10000,
   rhy_frac = 0.1,
-  min_A_effect = 0,
+  min_A_effect = 0.5,
   A_spread = 1,
   DE_frac = 0.1,
   min_DE_effect = 0.5,
   DE_spread = 1,
   groups = c("ctrl", "expt"),
   emp_dist = NULL,
-  depth = 1e+07,
+  depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
   seed = NULL
 )
