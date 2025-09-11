@@ -43,7 +43,9 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
 
   if (is.null(emp_dist)) {
     emp_dist <- Mm_liver_LD_NC
-  }
+  } else if (is.list(emp_dist)) {
+    pick_emp_dist <- sample(length(emp_dist), 1)
+    emp_dist <- emp_dist[[pick_emp_dist]]  }
 
   n_rhy <- round(rhy_frac * n_genes)
 
@@ -146,6 +148,9 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
 
   if (is.null(emp_dist)) {
     emp_dist <- Mm_liver_LD_NC
+  } else if (is.list(emp_dist)) {
+    pick_emp_dist <- sample(length(emp_dist), 1)
+    emp_dist <- emp_dist[[pick_emp_dist]]
   }
 
   t <- rep(t, times = reps)
