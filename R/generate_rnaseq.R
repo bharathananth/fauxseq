@@ -169,9 +169,10 @@ generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
       A[G_rhy_index[i], 1] = 1.0
     else if (DR_groups[i] == "loss")
       A[G_rhy_index[i], 2] = 1.0
-    else if (DR_groups[i] == "same")
+    else if (DR_groups[i] == "same"){
       A[G_rhy_index[i], 1] = A[G_rhy_index[i], 2]
-    phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
+      phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
+    }
   }
   params <- data.frame(
     id = paste0("g", which(G_rhy)),
