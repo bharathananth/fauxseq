@@ -21,7 +21,7 @@
 #'   properties and a data.frame of the sample data.
 #' @export
 #'
-generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
+generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                 reps = NULL,
                                 period = 24,
                                 n_genes = 10000,
@@ -122,7 +122,7 @@ generate_rhy_rnaseq <- function(t = seq(0, 20, 4),
 #'   properties and a data.frame of the sample data.
 #' @export
 #'
-generate_diffrhy_rnaseq <- function(t = seq(0, 20, 4),
+generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                     reps = NULL,
                                     period = 24,
                                     n_genes = 10000,
