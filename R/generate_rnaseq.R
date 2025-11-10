@@ -162,55 +162,63 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   N <- length(t)
 
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
-  prior_p <- rgamma(4, shape = DR_probs, rate = 1)
-  prior_p <- prior_p / sum(prior_p)
-  DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), rmultinom(1, sum(G_rhy), prior_p))]
-  A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
-  A[!G_rhy, ] <- 1.0
-  phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
-  phi[!G_rhy, ] <- 0
 
-  G_rhy_index <- which(G_rhy)
-  for (i in seq_along(DR_groups)) {
-    if (DR_groups[i] == "gain") {
-      A[G_rhy_index[i], 1] <- 1.0
-      phi[G_rhy_index[i], 1] <- 0.0
-    } else if (DR_groups[i] == "loss") {
-      A[G_rhy_index[i], 2] <- 1.0
-      phi[G_rhy_index[i], 2] <- 0.0
-    } else if (DR_groups[i] == "same") {
-      A[G_rhy_index[i], 1] <- A[G_rhy_index[i], 2]
-      phi[G_rhy_index[i], 1] <- phi[G_rhy_index[i], 2]
+  if (sum(G_rhy) > 0) {
+    prior_p <- rgamma(4, shape = DR_probs, rate = 1)
+    prior_p <- prior_p / sum(prior_p)
+    DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), rmultinom(1, sum(G_rhy), prior_p))]
+    A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
+    A[!G_rhy, ] <- 1.0
+    phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
+    phi[!G_rhy, ] <- 0
+
+    G_rhy_index <- which(G_rhy)
+    for (i in seq_along(DR_groups)) {
+      if (DR_groups[i] == "gain") {
+        A[G_rhy_index[i], 1] <- 1.0
+        phi[G_rhy_index[i], 1] <- 0.0
+      } else if (DR_groups[i] == "loss") {
+        A[G_rhy_index[i], 2] <- 1.0
+        phi[G_rhy_index[i], 2] <- 0.0
+      } else if (DR_groups[i] == "same") {
+        A[G_rhy_index[i], 1] <- A[G_rhy_index[i], 2]
+        phi[G_rhy_index[i], 1] <- phi[G_rhy_index[i], 2]
+      }
     }
+    params <- data.frame(
+      id = paste0("g", seq(n_genes)),
+      A_1 = log2(A[, 1]),
+      A_2 = log2(A[, 2]),
+      phi_1 = phi[, 1],
+      phi_2 = phi[, 2]
+    )
+    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)))
+
+    params <- merge(
+      params,
+      data.frame(id = paste0("g", which(G_rhy)), category = DR_groups),
+      all.x = TRUE,
+      by = "id"
+    )
+
+    t_pattern <- cbind(
+      cos(phi[, 1, drop = FALSE]) %*% cos(2 * pi * t / period) +
+        sin(phi[, 1, drop = FALSE]) %*% sin(2 * pi * t / period),
+      cos(phi[, 2, drop = FALSE]) %*% cos(2 * pi * t / period) +
+        sin(phi[, 2, drop = FALSE]) %*% sin(2 * pi * t / period)
+    )
+  } else {
+    params <- data.frame(matrix(nrow = 0, ncol = 6))
+    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)), "category")
+    params$id <- character(0)
+    params$category <- character(0)
   }
-  params <- data.frame(
-    id = paste0("g", seq(n_genes)),
-    A_1 = log2(A[, 1]),
-    A_2 = log2(A[, 2]),
-    phi_1 = phi[, 1],
-    phi_2 = phi[, 2]
-  )
-  colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)))
-
-  params <- merge(
-    params,
-    data.frame(id = paste0("g", which(G_rhy)), category = DR_groups),
-    all.x = TRUE,
-    by = "id"
-  )
-
-  t_pattern <- cbind(
-    cos(phi[, 1, drop = FALSE]) %*% cos(2 * pi * t / period) +
-      sin(phi[, 1, drop = FALSE]) %*% sin(2 * pi * t / period),
-    cos(phi[, 2, drop = FALSE]) %*% cos(2 * pi * t / period) +
-      sin(phi[, 2, drop = FALSE]) %*% sin(2 * pi * t / period)
-  )
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
   DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)), nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
   DE_effects[!G_DE] <- 1.0
-  params_de <- data.frame(id = paste0("g", which(G_DE)),
-                          DE_effect = log2(DE_effects[G_DE]))
+  params_de <- data.frame(id = paste0("g", seq(n_genes)),
+                          DE_effect = ifelse(G_DE, log2(DE_effects[G_DE]), NA))
 
   params <- merge(params, params_de, by = "id", all = TRUE)
   params <- params[order(as.numeric(gsub("g", "", params$id))), ]
@@ -228,8 +236,20 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params$mu <- emp_dist$mu[draw]
   DE_effects <- cbind(rep(1, n_genes), DE_effects)
 
-  lambda <- (lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] *
-               A[, rep(c(1, 2), each = N)]^t_pattern)
+  if (sum(G_rhy) > 0) {
+    if (sum(G_DE) > 0) {
+      lambda <- (lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] *
+                   A[, rep(c(1, 2), each = N)]^t_pattern)
+    } else {
+      lambda <- lambda[, rep(1, 2 * N)] * A[, rep(c(1, 2), each = N)]^t_pattern
+    }
+  } else {
+    if (sum(G_DE) > 0) {
+      lambda <- lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)]
+    } else {
+      lambda <- lambda[, rep(1, 2 * N)]
+    }
+  }
 
   mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
