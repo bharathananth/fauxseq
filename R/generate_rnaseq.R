@@ -48,8 +48,6 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     emp_dist <- emp_dist[[pick_emp_dist]]
   }
 
-  n_rhy <- round(rhy_frac * n_genes)
-
   t <- rep(t, times = reps)
   N <- length(t)
 
@@ -120,6 +118,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 #' @param depth A positive integer.
 #' @param lib_size_var A numeric vector of two positive elements.
 #' @param seed A positive integer.
+#' @param DR_probs A vector of length 4. Determines the relative average number
+#'   of  ("same", "gain", "loss", "change") group elements.
 #'
 #' @returns A list containing a integer matrix, a data.frame of feature
 #'   properties and a data.frame of the sample data.
@@ -130,6 +130,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          period = 24,
                                          n_genes = 10000,
                                          rhy_frac = 0.1,
+                                         DR_probs = rep(0.25, 4),
                                          min_A_effect = 0.5,
                                          A_spread = 1,
                                          DE_frac = 0.1,
@@ -161,7 +162,9 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   N <- length(t)
 
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
-  DR_groups <- sample(c("gain", "loss", "change", "same"), sum(G_rhy), replace = TRUE)
+  prior_p <- rgamma(4, shape = DR_probs, rate = 1)
+  prior_p <- prior_p / sum(prior_p)
+  DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), rmultinom(1, sum(G_rhy), prior_p))]
   A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
   A[!G_rhy, ] <- 1.0
   phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
@@ -170,16 +173,14 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   G_rhy_index <- which(G_rhy)
   for (i in seq_along(DR_groups)) {
     if (DR_groups[i] == "gain") {
-      A[G_rhy_index[i], 1] = 1.0
-      phi[G_rhy_index[i], 1] = 0.0
-    }
-    else if (DR_groups[i] == "loss") {
-      A[G_rhy_index[i], 2] = 1.0
-      phi[G_rhy_index[i], 2] = 0.0
-    }
-    else if (DR_groups[i] == "same") {
-      A[G_rhy_index[i], 1] = A[G_rhy_index[i], 2]
-      phi[G_rhy_index[i], 1] = phi[G_rhy_index[i], 2]
+      A[G_rhy_index[i], 1] <- 1.0
+      phi[G_rhy_index[i], 1] <- 0.0
+    } else if (DR_groups[i] == "loss") {
+      A[G_rhy_index[i], 2] <- 1.0
+      phi[G_rhy_index[i], 2] <- 0.0
+    } else if (DR_groups[i] == "same") {
+      A[G_rhy_index[i], 1] <- A[G_rhy_index[i], 2]
+      phi[G_rhy_index[i], 1] <- phi[G_rhy_index[i], 2]
     }
   }
   params <- data.frame(
@@ -227,7 +228,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params$mu <- emp_dist$mu[draw]
   DE_effects <- cbind(rep(1, n_genes), DE_effects)
 
-  lambda <- lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] * A[, rep(c(1, 2), each = N)]^t_pattern
+  lambda <- (lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] *
+               A[, rep(c(1, 2), each = N)]^t_pattern)
 
   mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
