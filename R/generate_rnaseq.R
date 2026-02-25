@@ -119,7 +119,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 #' @param lib_size_var A numeric vector of two positive elements.
 #' @param seed A positive integer.
 #' @param DR_probs A vector of length 4. Determines the relative average number
-#'   of  ("same", "gain", "loss", "change") group elements.
+#'   of  ("same", "gain", "loss", "change") group elements. The larger the numbers
+#'   more concentrated are th actual number around the averages.
 #'
 #' @returns A list containing a integer matrix, a data.frame of feature
 #'   properties and a data.frame of the sample data.
@@ -130,7 +131,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          period = 24,
                                          n_genes = 10000,
                                          rhy_frac = 0.1,
-                                         DR_probs = rep(0.25, 4),
+                                         DR_probs = rep(1.25, 4),
                                          min_A_effect = 0.5,
                                          A_spread = 1,
                                          DE_frac = 0.1,
