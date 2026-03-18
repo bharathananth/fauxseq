@@ -82,9 +82,11 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)), samples = replicate(N, paste0(
-      sample(letters, 5), collapse = ""
-    )))
+    dimnames = list(id = paste0("g", seq(n_genes)),
+                    samples = make.names(replicate(N, paste0(sample(letters, 5),
+                                                             collapse = "")),
+                                         unique=TRUE)
+      )
   )
 
   exp_design <- data.frame(time = t, row.names = colnames(counts))
@@ -258,9 +260,11 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)), samples = replicate(2 * N, paste0(
-      sample(letters, 5), collapse = ""
-    )))
+    dimnames = list(id = paste0("g", seq(n_genes)),
+                    samples = make.names(replicate(2 * N,
+                                                   paste0(sample(letters, 5),
+                                                          collapse = "")),
+                                         unique=TRUE))
   )
 
   exp_design <- data.frame(
