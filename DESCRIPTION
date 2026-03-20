@@ -1,13 +1,12 @@
 Package: fauxseq
 Type: Package
-Title: Generate Artificial High-throughput Timeseries Datasets
+Title: A synthetic timeseries RNA-seq data generator
 Version: 0.1.0
 Authors@R: c(
     person("Bharath", "Ananthasubramaniam", , "bharath.ananthasubramaniam@hu-berlin.de", role = c("aut", "cre", "cph"))
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: GPL (>= 3)
+Description: This package can generate synthetic timeseries RNA-seq data with a fraction of rhythmic genes and empirical relationship between mean expression and variability across replicates of genes.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:

@@ -1,8 +1,10 @@
 #' Downsample all samples to have same number of reads as the smallest sample
 #'
-#' @param counts An integer matrix.
-#' @param parallel A boolean.
-#' @param ncores An integer.
+#' @param counts An integer matrix, count data to be downsampled
+#' @param parallel A boolean, should samples be processed in parallel, by
+#'   default TRUE
+#' @param ncores An integer, number of cores to be used, by default NULL (use
+#'   all available)
 #'
 #' @returns An integer matrix
 #' @export
@@ -41,12 +43,12 @@ downsample <- function(counts,
   return(downsampled_counts)
 }
 
-#' Reduce the total column of a sample by downsampling
+#' Downsample count data for a single sample such that total counts equals N.
 #'
-#' @param y An integer vector to downsample.
-#' @param N An integer scalar.
+#' @param y An integer vector, count data for one sample
+#' @param N An integer scalar, target total counts
 #'
-#' @returns An integer vector.
+#' @returns An integer vector, downsampled counts
 #'
 drop_counts <- function(y, N) {
   total <- sum(y)

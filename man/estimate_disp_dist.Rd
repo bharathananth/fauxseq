@@ -9,7 +9,10 @@ estimate_disp_dist(counts, parallel = TRUE, ncores = NULL)
 \arguments{
 \item{counts}{A integer matrix.}
 
-\item{parallel}{A boolean.}
+\item{parallel}{A boolean, whether samples must be parallelly processed,
+default TRUE}
+
+\item{ncores}{An integer, the number of cores to use.}
 }
 \value{
 A data.frame of mean and size of negative binomial fits.

@@ -1,7 +1,9 @@
 #' Estimate the mean-dispersion of count dataset
 #'
 #' @param counts A integer matrix.
-#' @param parallel A boolean.
+#' @param parallel A boolean, whether samples must be parallelly processed,
+#'   default TRUE
+#' @param ncores An integer, the number of cores to use.
 #'
 #' @returns A data.frame of mean and size of negative binomial fits.
 #' @export

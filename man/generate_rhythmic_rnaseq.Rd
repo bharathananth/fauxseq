@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_rnaseq.R
 \name{generate_rhythmic_rnaseq}
 \alias{generate_rhythmic_rnaseq}
-\title{Generate rhythmic RNA-seq count data}
+\title{Generate synthetic rhythmic RNA-seq count data in one condition.}
 \usage{
 generate_rhythmic_rnaseq(
   t = seq(0, 20, 4),
@@ -19,35 +19,45 @@ generate_rhythmic_rnaseq(
 )
 }
 \arguments{
-\item{t}{A numeric vector.}
+\item{t}{A numeric vector, time points at which samples are generated, by
+default seq(0, 20, 4)}
 
 \item{reps}{NULL or numeric scalar or numeric vector with the same length as
-`t`.}
+`t`, number of replicates at each time point, by default 1}
 
-\item{period}{A numeric scalar.}
+\item{period}{A numeric scalar, period of the rhythmic genes, by default 24}
 
-\item{n_genes}{An integer.}
+\item{n_genes}{An integer, number of genes in the dataset, by default 10000}
 
-\item{rhy_frac}{A fraction between 0 and 1.}
+\item{rhy_frac}{A fraction between 0 and 1, fraction of genes that are
+rhythmic, by default 0.1}
 
-\item{min_A_effect}{A positive numeric scalar.}
+\item{min_A_effect}{A positive numeric scalar, minimum amplitude (in log2
+fold) of rhythmic genes, by default 0.5}
 
-\item{A_spread}{A positive numeric scalar.}
+\item{A_spread}{A positive numeric scalar, mean of the exponential
+distribution of rhythmic gene amplitudes (in log2 fold), by default 1}
 
 \item{emp_dist}{A data.frame with two columns containing the empirical mu
-(means) and empirical size (reciprocal of dispersion).}
+(means) and empirical size (reciprocal of dispersion), by default NULL
+(read from one of five mouse tissue datasets at random)}
 
-\item{depth}{A positive integer.}
+\item{depth}{A positive integer, average sequencing depth of different
+samples, by default 4e7}
 
-\item{lib_size_var}{A numeric vector of two positive elements.}
+\item{lib_size_var}{A numeric vector of two positive elements, window of
+variability of sequencing depth of samples about 'depth', by default c(0.8,
+1.2)}
 
-\item{seed}{A positive integer.}
+\item{seed}{A positive integer, seed to ensure reproducible datasets, by
+default NULL}
 }
 \value{
-A list containing a integer matrix, a data.frame of feature
+A list containing an integer count matrix, a data.frame of feature
   properties and a data.frame of the sample data.
 }
 \description{
-Generate rhythmic RNA-seq count data with same properties of a reference
-dataset.
+This function generates artificial timeseries transcriptomic data under one
+condition, with rhythmically expressed genes and empirically estimated
+variability between replicates/samples.
 }

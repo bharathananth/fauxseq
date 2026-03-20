@@ -1,23 +1,33 @@
-#' Generate rhythmic RNA-seq count data
+#' Generate synthetic rhythmic RNA-seq count data in one condition.
 #'
-#' Generate rhythmic RNA-seq count data with same properties of a reference
-#' dataset.
+#' This function generates artificial timeseries transcriptomic data under one
+#' condition, with rhythmically expressed genes and empirically estimated
+#' variability between replicates/samples.
 #'
-#' @param t A numeric vector.
+#' @param t A numeric vector, time points at which samples are generated, by
+#'   default seq(0, 20, 4)
 #' @param reps NULL or numeric scalar or numeric vector with the same length as
-#'   `t`.
-#' @param period A numeric scalar.
-#' @param n_genes An integer.
-#' @param rhy_frac A fraction between 0 and 1.
-#' @param min_A_effect A positive numeric scalar.
-#' @param A_spread A positive numeric scalar.
+#'   `t`, number of replicates at each time point, by default 1
+#' @param period A numeric scalar, period of the rhythmic genes, by default 24
+#' @param n_genes An integer, number of genes in the dataset, by default 10000
+#' @param rhy_frac A fraction between 0 and 1, fraction of genes that are
+#'   rhythmic, by default 0.1
+#' @param min_A_effect A positive numeric scalar, minimum amplitude (in log2
+#'   fold) of rhythmic genes, by default 0.5
+#' @param A_spread A positive numeric scalar, mean of the exponential
+#'   distribution of rhythmic gene amplitudes (in log2 fold), by default 1
 #' @param emp_dist A data.frame with two columns containing the empirical mu
-#'   (means) and empirical size (reciprocal of dispersion).
-#' @param depth A positive integer.
-#' @param lib_size_var A numeric vector of two positive elements.
-#' @param seed A positive integer.
+#'   (means) and empirical size (reciprocal of dispersion), by default NULL
+#'   (read from one of five mouse tissue datasets at random)
+#' @param depth A positive integer, average sequencing depth of different
+#'   samples, by default 4e7
+#' @param lib_size_var A numeric vector of two positive elements, window of
+#'   variability of sequencing depth of samples about 'depth', by default c(0.8,
+#'   1.2)
+#' @param seed A positive integer, seed to ensure reproducible datasets, by
+#'   default NULL
 #'
-#' @returns A list containing a integer matrix, a data.frame of feature
+#' @returns A list containing an integer count matrix, a data.frame of feature
 #'   properties and a data.frame of the sample data.
 #' @export
 #'
@@ -42,7 +52,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    emp_dist <- Mm_liver_LD_NC
+    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
   } else if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
@@ -82,11 +92,12 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)),
-                    samples = make.names(replicate(N, paste0(sample(letters, 5),
-                                                             collapse = "")),
-                                         unique=TRUE)
-      )
+    dimnames = list(
+      id = paste0("g", seq(n_genes)),
+      samples = make.names(replicate(N, paste0(
+        sample(letters, 5), collapse = ""
+      )), unique = TRUE)
+    )
   )
 
   exp_design <- data.frame(time = t, row.names = colnames(counts))
@@ -100,32 +111,48 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
 #' Generate rhythmic RNA-seq count data under two conditions
 #'
-#' Generate rhythmic RNA-seq count data under two conditions with both changes
-#' in rhythms and mean expression.
+#' This function generates artificial timeseries transcriptomic data under two
+#' conditions, which includes both differentially rhythmic and differential
+#' expressed genes, as well as empirically estimated variability between
+#' replicates/samples.
 #'
-#' @param t A numeric vector
+#' @param t A numeric vector, time points at which samples are generated, by
+#'   default seq(0, 20, 4)
 #' @param reps NULL or numeric scalar or numeric vector with the same length as
-#'   `t`
-#' @param period A numeric scalar.
-#' @param n_genes An integer.
-#' @param rhy_frac A fraction between 0 and 1.
-#' @param min_A_effect A positive numeric scalar.
-#' @param A_spread A positive numeric scalar.
-#' @param DE_frac A fraction between 0 and 1.
-#' @param min_DE_effect A positive numeric scalar.
-#' @param DE_spread A positive numeric scalar.
-#' @param groups A character vector of length 2.
-#' @param emp_dist A data.frame with two columns containing the empirical mu
-#'   (means) and empirical size (reciprocal of dispersion)
-#' @param depth A positive integer.
-#' @param lib_size_var A numeric vector of two positive elements.
-#' @param seed A positive integer.
+#'   `t`. number of replicates at each time point, by default 1
+#' @param period A numeric scalar, period of the rhythmic genes, by default 24
+#' @param n_genes An integer, number of genes in the dataset, by default 10000
+#' @param rhy_frac A fraction between 0 and 1, fraction of genes that are
+#'   rhythmic, by default 0.1
 #' @param DR_probs A vector of length 4. Determines the relative average number
-#'   of  ("same", "gain", "loss", "change") group elements. The larger the numbers
-#'   more concentrated are th actual number around the averages.
+#'   of  ("same", "gain", "loss", "change") group elements. The larger the
+#'   numbers more concentrated are th actual number around the averages, by
+#'   default rep(1.25, 4)
+#' @param min_A_effect A positive numeric scalar, minimum amplitude (in log2
+#'   fold) of rhythmic genes, by default 0.5
+#' @param A_spread A positive numeric scalar, mean of the exponential
+#'   distribution of rhythmic gene amplitudes (in log2 fold), by default 1
+#' @param DE_frac A fraction between 0 and 1, fraction of differentially
+#'   expressed (DE) genes, by default 0.1
+#' @param min_DE_effect A positive numeric scalar, minimum log2 fold change in
+#'   expression of DE genes, by default 0.5
+#' @param DE_spread A positive numeric scalar, mean of the exponential
+#'   distribution of DE fold changes, by default 1.0
+#' @param groups A character vector of length 2, labels for the two
+#'   groups/conditions, by default c("ctrl", "expt")
+#' @param emp_dist A data.frame with two columns containing the empirical mu
+#'   (means) and empirical size (reciprocal of dispersion), by default read from
+#'   one of 5 mouse tissues at random.
+#' @param depth A positive integer, average sequencing depth of different
+#'   samples, by default 4e7
+#' @param lib_size_var A numeric vector of two positive elements, window of
+#'   variability of sequencing depth of samples about 'depth', by default c(0.8,
+#'   1.2)
+#' @param seed A positive integer, seed to ensure reproducible datasets, by
+#'   default NULL
 #'
-#' @returns A list containing a integer matrix, a data.frame of feature
-#'   properties and a data.frame of the sample data.
+#' @returns A list containing a integer count matrix, a data.frame of feature
+#'   properties and a data.frame of the sample metadata.
 #' @export
 #'
 generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
@@ -154,7 +181,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    emp_dist <- Mm_liver_LD_NC
+    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
   } else if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
@@ -167,9 +194,9 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
 
   if (sum(G_rhy) > 0) {
-    prior_p <- rgamma(4, shape = DR_probs, rate = 1)
+    prior_p <- stats::rgamma(4, shape = DR_probs, rate = 1)
     prior_p <- prior_p / sum(prior_p)
-    DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), rmultinom(1, sum(G_rhy), prior_p))]
+    DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), stats::rmultinom(1, sum(G_rhy), prior_p))]
     A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
     A[!G_rhy, ] <- 1.0
     phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
@@ -260,11 +287,12 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     mapply(\(x, y) stats::rnbinom(1, size = x, mu = y), size, mu),
     nrow = n_genes,
     byrow = FALSE,
-    dimnames = list(id = paste0("g", seq(n_genes)),
-                    samples = make.names(replicate(2 * N,
-                                                   paste0(sample(letters, 5),
-                                                          collapse = "")),
-                                         unique=TRUE))
+    dimnames = list(
+      id = paste0("g", seq(n_genes)),
+      samples = make.names(replicate(2 * N, paste0(
+        sample(letters, 5), collapse = ""
+      )), unique = TRUE)
+    )
   )
 
   exp_design <- data.frame(

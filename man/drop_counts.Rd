@@ -2,18 +2,18 @@
 % Please edit documentation in R/utils.R
 \name{drop_counts}
 \alias{drop_counts}
-\title{Reduce the total column of a sample by downsampling}
+\title{Downsample count data for a single sample such that total counts equals N.}
 \usage{
 drop_counts(y, N)
 }
 \arguments{
-\item{y}{An integer vector to downsample.}
+\item{y}{An integer vector, count data for one sample}
 
-\item{N}{An integer scalar.}
+\item{N}{An integer scalar, target total counts}
 }
 \value{
-An integer vector.
+An integer vector, downsampled counts
 }
 \description{
-Reduce the total column of a sample by downsampling
+Downsample count data for a single sample such that total counts equals N.
 }

@@ -7,11 +7,13 @@
 downsample(counts, parallel = TRUE, ncores = NULL)
 }
 \arguments{
-\item{counts}{An integer matrix.}
+\item{counts}{An integer matrix, count data to be downsampled}
 
-\item{parallel}{A boolean.}
+\item{parallel}{A boolean, should samples be processed in parallel, by
+default TRUE}
 
-\item{ncores}{An integer.}
+\item{ncores}{An integer, number of cores to be used, by default NULL (use
+all available)}
 }
 \value{
 An integer matrix

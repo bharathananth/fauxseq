@@ -10,6 +10,7 @@ generate_diffrhythmic_rnaseq(
   period = 24,
   n_genes = 10000,
   rhy_frac = 0.1,
+  DR_probs = rep(1.25, 4),
   min_A_effect = 0.5,
   A_spread = 1,
   DE_frac = 0.1,
@@ -23,43 +24,63 @@ generate_diffrhythmic_rnaseq(
 )
 }
 \arguments{
-\item{t}{A numeric vector}
+\item{t}{A numeric vector, time points at which samples are generated, by
+default seq(0, 20, 4)}
 
 \item{reps}{NULL or numeric scalar or numeric vector with the same length as
-`t`}
+`t`. number of replicates at each time point, by default 1}
 
-\item{period}{A numeric scalar.}
+\item{period}{A numeric scalar, period of the rhythmic genes, by default 24}
 
-\item{n_genes}{An integer.}
+\item{n_genes}{An integer, number of genes in the dataset, by default 10000}
 
-\item{rhy_frac}{A fraction between 0 and 1.}
+\item{rhy_frac}{A fraction between 0 and 1, fraction of genes that are
+rhythmic, by default 0.1}
 
-\item{min_A_effect}{A positive numeric scalar.}
+\item{DR_probs}{A vector of length 4. Determines the relative average number
+of  ("same", "gain", "loss", "change") group elements. The larger the
+numbers more concentrated are th actual number around the averages, by
+default rep(1.25, 4)}
 
-\item{A_spread}{A positive numeric scalar.}
+\item{min_A_effect}{A positive numeric scalar, minimum amplitude (in log2
+fold) of rhythmic genes, by default 0.5}
 
-\item{DE_frac}{A fraction between 0 and 1.}
+\item{A_spread}{A positive numeric scalar, mean of the exponential
+distribution of rhythmic gene amplitudes (in log2 fold), by default 1}
 
-\item{min_DE_effect}{A positive numeric scalar.}
+\item{DE_frac}{A fraction between 0 and 1, fraction of differentially
+expressed (DE) genes, by default 0.1}
 
-\item{DE_spread}{A positive numeric scalar.}
+\item{min_DE_effect}{A positive numeric scalar, minimum log2 fold change in
+expression of DE genes, by default 0.5}
 
-\item{groups}{A character vector of length 2.}
+\item{DE_spread}{A positive numeric scalar, mean of the exponential
+distribution of DE fold changes, by default 1.0}
+
+\item{groups}{A character vector of length 2, labels for the two
+groups/conditions, by default c("ctrl", "expt")}
 
 \item{emp_dist}{A data.frame with two columns containing the empirical mu
-(means) and empirical size (reciprocal of dispersion)}
+(means) and empirical size (reciprocal of dispersion), by default read from
+one of 5 mouse tissues at random.}
 
-\item{depth}{A positive integer.}
+\item{depth}{A positive integer, average sequencing depth of different
+samples, by default 4e7}
 
-\item{lib_size_var}{A numeric vector of two positive elements.}
+\item{lib_size_var}{A numeric vector of two positive elements, window of
+variability of sequencing depth of samples about 'depth', by default c(0.8,
+1.2)}
 
-\item{seed}{A positive integer.}
+\item{seed}{A positive integer, seed to ensure reproducible datasets, by
+default NULL}
 }
 \value{
-A list containing a integer matrix, a data.frame of feature
-  properties and a data.frame of the sample data.
+A list containing a integer count matrix, a data.frame of feature
+  properties and a data.frame of the sample metadata.
 }
 \description{
-Generate rhythmic RNA-seq count data under two conditions with both changes
-in rhythms and mean expression.
+This function generates artificial timeseries transcriptomic data under two
+conditions, which includes both differentially rhythmic and differential
+expressed genes, as well as empirically estimated variability between
+replicates/samples.
 }
