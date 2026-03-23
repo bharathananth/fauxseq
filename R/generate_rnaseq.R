@@ -52,7 +52,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    tissues <- length(Mm_multitissue_LD_ALF)
+    tissues <- length(fauxseq::Mm_multitissue_LD_ALF)
     emp_dist <- fauxseq::Mm_multitissue_LD_ALF[[sample(tissues, 1)]]
   } else if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
@@ -182,7 +182,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
+    tissues <- length(fauxseq::Mm_multitissue_LD_ALF)
+    emp_dist <- fauxseq::Mm_multitissue_LD_ALF[[sample(tissues, 1)]]
   } else if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
@@ -239,10 +240,10 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
         sin(phi[, 2, drop = FALSE]) %*% sin(2 * pi * t / period)
     )
   } else {
-    params <- data.frame(matrix(nrow = 0, ncol = 6))
+    params <- data.frame(matrix(0, nrow = n_genes, ncol = 6))
     colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)), "category")
-    params$id <- character(0)
-    params$category <- character(0)
+    params$id <- paste0("g", seq(n_genes))
+    params$category <- NA
   }
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)

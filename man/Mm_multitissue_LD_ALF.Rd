@@ -21,6 +21,7 @@ Mm_multitissue_LD_ALF
 \description{
 A subset of tissues from Deota et al. data (adlib feeding) were selected
 based on clustering of their empirical mean-dispersion estimates. All the
-original count data were from paired end libraries run on Novaseq 6000.
+original count data were generated from paired end libraries run on Novaseq
+6000.
 }
 \keyword{datasets}
