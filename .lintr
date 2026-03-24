@@ -1,0 +1,10 @@
+linters: linters_with_defaults(
+  line_length_linter(80),
+  object_name_linter = NULL
+  ) # see vignette("lintr")
+encoding: "UTF-8"
+exclusions: list(
+  "data-raw/Mm_multitissue.R",
+  "data-raw/Hs_skmusc_LD.R",
+  "data-raw/Mm_liver_LC_NC.R"
+  )

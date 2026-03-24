@@ -13,10 +13,9 @@ estimate_disp_dist <- function(counts,
                                ncores = NULL) {
   counts <- downsample(counts, parallel = parallel, ncores = ncores)
   ests <- apply(counts, 1, nb_fit)
-  final_ests <- t(ests) |>
+  t(ests) |>
     stats::na.omit() |>
     data.frame()
-  return(final_ests)
 }
 
 #' Fit negative binomial distribution using MLE
@@ -44,8 +43,8 @@ nb_fit <- function(x) {
         upper = 1e6
       )
     )
-    return(c(size = fit$estimate, mu = m))
+    c(size = fit$estimate, mu = m)
   }, error = function(e) {
-    return(c(size = NA, mu = NA))
+    c(size = NA, mu = NA)
   })
 }

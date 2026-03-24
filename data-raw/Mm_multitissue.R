@@ -11,11 +11,17 @@ data <- data[, grepl("ALF", colnames(data))]
 
 tissues <- str_extract(colnames(data), "^[A-Za-z]+") |> unique()
 
-tissue_data <- map(tissues, \(tis) data[, grepl(tis, names(data))] %>% filter(rowSums(.)>0))
+tissue_data <- map(tissues, \(tis) {
+  data[, grepl(tis, names(data))] |>
+    filter(rowSums(.) > 0)
+})
 
-tissue_stats <- map(tissue_data, \(x) data.matrix(x) |>
-                      estimate_disp_dist() |>
-                      slice_sample(n=10000))
+tissue_stats <- map(tissue_data, \(x) {
+  data.matrix(x) |>
+    estimate_disp_dist() |>
+    slice_sample(n = 10000)
+})
+
 
 names(tissue_stats) <- tissues
 

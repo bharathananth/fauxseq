@@ -40,7 +40,7 @@ downsample <- function(counts,
   # Reset plan to original (to not break parent/global state)
   future::plan(old_plan)
 
-  return(downsampled_counts)
+  downsampled_counts
 }
 
 #' Downsample count data for a single sample such that total counts equals N.
@@ -58,11 +58,11 @@ drop_counts <- function(y, N) {
   }
 
   if (total == N) {
-    return(y)
+    y
   } else {
     all_reads <- rep(seq_along(y), times = y)
     removed <- sample(all_reads, N)
 
-    return(tabulate(removed, nbins = length(y)))
+    tabulate(removed, nbins = length(y))
   }
 }

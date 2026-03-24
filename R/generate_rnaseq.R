@@ -65,7 +65,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
 
-  A <- matrix((1 + min_A_effect + stats::rexp(n_genes, A_spread)), nrow = n_genes)
+  A <- matrix((1 + min_A_effect + stats::rexp(n_genes, A_spread)),
+              nrow = n_genes)
   A[!G_rhy] <- 1.0
   phi <- matrix(stats::runif(n_genes) * 2 * pi * G_rhy, nrow = n_genes)
   phi[!G_rhy] <- 0
@@ -104,11 +105,9 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
   exp_design <- data.frame(time = t, row.names = colnames(counts))
 
-  return(list(
-    counts = counts,
-    params = params,
-    exp_design = exp_design
-  ))
+  list(counts = counts,
+       params = params,
+       exp_design = exp_design)
 }
 
 #' Generate rhythmic RNA-seq count data under two conditions
@@ -200,8 +199,11 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   if (sum(G_rhy) > 0) {
     prior_p <- stats::rgamma(4, shape = DR_probs, rate = 1)
     prior_p <- prior_p / sum(prior_p)
-    DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), stats::rmultinom(1, sum(G_rhy), prior_p))]
-    A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)), nrow = n_genes)
+    DR_counts <- stats::rmultinom(1, sum(G_rhy), prior_p)
+    DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), DR_counts)]
+
+    A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)),
+                nrow = n_genes)
     A[!G_rhy, ] <- 1.0
     phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
     phi[!G_rhy, ] <- 0
@@ -226,7 +228,10 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
       phi_1 = phi[, 1],
       phi_2 = phi[, 2]
     )
-    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)))
+    colnames(params) <- c("id",
+                          paste0(rep(c("A", "phi"), each = 2),
+                                 "_",
+                                 rep(groups, 2)))
 
     params <- merge(
       params,
@@ -243,13 +248,16 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     )
   } else {
     params <- data.frame(matrix(0, nrow = n_genes, ncol = 6))
-    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2), "_", rep(groups, 2)), "category")
+    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2),
+                                       "_", rep(groups, 2)),
+                          "category")
     params$id <- paste0("g", seq(n_genes))
     params$category <- NA
   }
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
-  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)), nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
+  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)),
+                       nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
   DE_effects[!G_DE] <- 1.0
   params_de <- data.frame(id = paste0("g", seq(n_genes)),
                           DE_effect = ifelse(G_DE, log2(DE_effects[G_DE]), NA))
@@ -257,7 +265,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params <- merge(params, params_de, by = "id", all = TRUE)
   params <- params[order(as.numeric(gsub("g", "", params$id))), ]
 
-  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1], max = lib_size_var[2])
+  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1],
+                               max = lib_size_var[2])
   lib_size <- lib_size_fct * depth
 
   draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
@@ -272,7 +281,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
   if (sum(G_rhy) > 0) {
     if (sum(G_DE) > 0) {
-      lambda <- (lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)] *
+      lambda <- (lambda[, rep(1, 2 * N)] *
+                   DE_effects[, rep(c(1, 2), each = N)] *
                    A[, rep(c(1, 2), each = N)]^t_pattern)
     } else {
       lambda <- lambda[, rep(1, 2 * N)] * A[, rep(c(1, 2), each = N)]^t_pattern
@@ -305,9 +315,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     row.names = colnames(counts)
   )
 
-  return(list(
-    counts = counts,
-    params = params,
-    exp_design = exp_design
-  ))
+  list(counts = counts,
+       params = params,
+       exp_design = exp_design)
 }
