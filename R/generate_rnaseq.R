@@ -52,9 +52,10 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    tissues <- length(fauxseq::Mm_multitissue_LD_ALF)
-    emp_dist <- fauxseq::Mm_multitissue_LD_ALF[[sample(tissues, 1)]]
-  } else if (is.list(emp_dist)) {
+    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
+  }
+
+  if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
   }
@@ -182,9 +183,10 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   if (is.null(emp_dist)) {
-    tissues <- length(fauxseq::Mm_multitissue_LD_ALF)
-    emp_dist <- fauxseq::Mm_multitissue_LD_ALF[[sample(tissues, 1)]]
-  } else if (is.list(emp_dist)) {
+    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
+  }
+
+  if (is.list(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
   }
