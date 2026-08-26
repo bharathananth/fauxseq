@@ -50,7 +50,7 @@ test_that("parameters satisfy conditions", {
       expect_shape(params, dim = c(n_genes, 5))
       expect_identical(rownames(sim_data$counts), params$id)
       expect_all_true(ifelse(params$A > 0,
-                             params$A >= log2(1 + min_A_effect), TRUE))
+                             params$A >= min_A_effect, TRUE))
       expect_all_true(params$phi >= 0 & params$phi <= 2 * pi)
     }
   )
@@ -138,11 +138,11 @@ test_that("parameters satisfy conditions", {
       expect_identical(rownames(sim_data$counts), params$id)
       expect_in(params$category, c("same", "gain", "loss", "change", NA))
       expect_all_true(ifelse(!is.na(params$DE_effect), abs(params$DE_effect) >=
-                               log2(1 + min_DE_effect), TRUE))
+                               min_DE_effect, TRUE))
       expect_all_true(ifelse(params$category %in% c("same", "loss", "change"),
-                             params$A_ctrl >= log2(1 + min_A_effect), TRUE))
+                             params$A_ctrl >= min_A_effect, TRUE))
       expect_all_true(ifelse(params$category %in% c("same", "gain", "change"),
-                             params$A_expt >= log2(1 + min_A_effect), TRUE))
+                             params$A_expt >= min_A_effect, TRUE))
       expect_all_true(ifelse(!is.na(params$category), (params$phi_ctrl >= 0) &
                                (params$phi_ctrl <= 2 * pi), TRUE))
       expect_all_true(ifelse(!is.na(params$category), (params$phi_expt >= 0) &

@@ -13,9 +13,9 @@
 #' @param rhy_frac A fraction between 0 and 1, fraction of genes that are
 #'   rhythmic, by default 0.1
 #' @param min_A_effect A positive numeric scalar, minimum amplitude (in log2
-#'   fold) of rhythmic genes, by default 0.5
+#'   fold) of rhythmic genes, by default 0.2
 #' @param A_spread A positive numeric scalar, mean of the exponential
-#'   distribution of rhythmic gene amplitudes (in log2 fold), by default 1
+#'   distribution of rhythmic gene amplitudes (in log2 fold), by default 0.5
 #' @param emp_dist A data.frame with two columns containing the empirical mu
 #'   (means) and empirical size (reciprocal of dispersion), by default NULL
 #'   (read from one of five mouse tissue datasets at random)
@@ -36,8 +36,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                      period = 24,
                                      n_genes = 10000,
                                      rhy_frac = 0.1,
-                                     min_A_effect = 0.5,
-                                     A_spread = 1,
+                                     min_A_effect = 0.2,
+                                     A_spread = 0.5,
                                      emp_dist = NULL,
                                      depth = 4e7,
                                      lib_size_var = c(0.8, 1.2),
@@ -65,13 +65,13 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
 
-  A <- matrix((1 + min_A_effect + stats::rexp(n_genes, A_spread)),
+  A <- matrix(min_A_effect + stats::rexp(n_genes, 1 / A_spread),
               nrow = n_genes)
-  A[!G_rhy] <- 1.0
+  A[!G_rhy] <- 0.0
   phi <- matrix(stats::runif(n_genes) * 2 * pi * G_rhy, nrow = n_genes)
   phi[!G_rhy] <- 0
   params <- data.frame(id = paste0("g", seq(n_genes)),
-                       A = log2(A),
+                       A = A,
                        phi = phi)
 
   t_pattern <- cos(phi) %*% cos(2 * pi * t / period) +
@@ -87,7 +87,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params$dispersion <- 1 / emp_dist$size[draw]
   size <- size[, rep(1, length(t))]
 
-  lambda <- lambda[, rep(1, N)] * A[, rep(1, N)]^t_pattern
+  lambda <- lambda[, rep(1, N)] * 2 ^ (A[, rep(1, N)] * t_pattern)
 
   mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
@@ -162,11 +162,11 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          n_genes = 10000,
                                          rhy_frac = 0.1,
                                          DR_probs = rep(1.25, 4),
-                                         min_A_effect = 0.5,
-                                         A_spread = 1,
+                                         min_A_effect = 0.2,
+                                         A_spread = 0.5,
                                          DE_frac = 0.1,
                                          min_DE_effect = 0.5,
-                                         DE_spread = 1,
+                                         DE_spread = 0.5,
                                          groups = c("ctrl", "expt"),
                                          emp_dist = NULL,
                                          depth = 4e7,
@@ -202,19 +202,19 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     DR_counts <- stats::rmultinom(1, sum(G_rhy), prior_p)
     DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), DR_counts)]
 
-    A <- matrix((1 + min_A_effect + stats::rexp(n_genes * 2, A_spread)),
+    A <- matrix(min_A_effect + stats::rexp(n_genes * 2, 1 / A_spread),
                 nrow = n_genes)
-    A[!G_rhy, ] <- 1.0
+    A[!G_rhy, ] <- 0.0
     phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
     phi[!G_rhy, ] <- 0
 
     G_rhy_index <- which(G_rhy)
     for (i in seq_along(DR_groups)) {
       if (DR_groups[i] == "gain") {
-        A[G_rhy_index[i], 1] <- 1.0
+        A[G_rhy_index[i], 1] <- 0.0
         phi[G_rhy_index[i], 1] <- 0.0
       } else if (DR_groups[i] == "loss") {
-        A[G_rhy_index[i], 2] <- 1.0
+        A[G_rhy_index[i], 2] <- 0.0
         phi[G_rhy_index[i], 2] <- 0.0
       } else if (DR_groups[i] == "same") {
         A[G_rhy_index[i], 1] <- A[G_rhy_index[i], 2]
@@ -223,8 +223,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     }
     params <- data.frame(
       id = paste0("g", seq(n_genes)),
-      A_1 = log2(A[, 1]),
-      A_2 = log2(A[, 2]),
+      A_1 = A[, 1],
+      A_2 = A[, 2],
       phi_1 = phi[, 1],
       phi_2 = phi[, 2]
     )
@@ -256,11 +256,11 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   }
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
-  DE_effects <- matrix((1 + min_DE_effect + stats::rexp(n_genes, DE_spread)),
-                       nrow = n_genes)^sign(2 * stats::runif(n_genes) - 1)
-  DE_effects[!G_DE] <- 1.0
+  DE_effects <- matrix(min_DE_effect + stats::rexp(n_genes, 1 / DE_spread),
+                       nrow = n_genes) * sign(2 * stats::runif(n_genes) - 1)
+  DE_effects[!G_DE] <- 0.0
   params_de <- data.frame(id = paste0("g", seq(n_genes)),
-                          DE_effect = ifelse(G_DE, log2(DE_effects[G_DE]), NA))
+                          DE_effect = ifelse(G_DE, DE_effects[G_DE], NA))
 
   params <- merge(params, params_de, by = "id", all = TRUE)
   params <- params[order(as.numeric(gsub("g", "", params$id))), ]
@@ -282,14 +282,15 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   if (sum(G_rhy) > 0) {
     if (sum(G_DE) > 0) {
       lambda <- (lambda[, rep(1, 2 * N)] *
-                   DE_effects[, rep(c(1, 2), each = N)] *
-                   A[, rep(c(1, 2), each = N)]^t_pattern)
+                   2 ^ (DE_effects[, rep(c(1, 2), each = N)] +
+                   A[, rep(c(1, 2), each = N)] * t_pattern))
     } else {
-      lambda <- lambda[, rep(1, 2 * N)] * A[, rep(c(1, 2), each = N)]^t_pattern
+      lambda <- lambda[, rep(1, 2 * N)] * 2 ^ (
+                                      A[, rep(c(1, 2), each = N)] * t_pattern)
     }
   } else {
     if (sum(G_DE) > 0) {
-      lambda <- lambda[, rep(1, 2 * N)] * DE_effects[, rep(c(1, 2), each = N)]
+      lambda <- lambda[, rep(1, 2 * N)] * 2 ^ DE_effects[, rep(c(1, 2), each = N)]
     } else {
       lambda <- lambda[, rep(1, 2 * N)]
     }
