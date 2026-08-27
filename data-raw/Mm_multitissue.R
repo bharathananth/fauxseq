@@ -13,7 +13,7 @@ tissues <- str_extract(colnames(data), "^[A-Za-z]+") |> unique()
 
 tissue_data <- map(tissues, \(tis) {
   data[, grepl(tis, names(data))] |>
-    filter(rowSums(.) > 0)
+    filter(if_any(everything(), \(x) x > 0))
 })
 
 tissue_stats <- map(tissue_data, \(x) {
@@ -28,5 +28,7 @@ names(tissue_stats) <- tissues
 # Mm_multitissue <- list_rbind(tissue_stats, names_to = "tissue")  # Complete data used for exploring mean-dispersion relationship
 
 Mm_multitissue_LD_ALF <- tissue_stats[c("SCN", "Pancreas", "Lung", "Liver", "Muscle")]
+
+names(Mm_multitissue_LD_ALF) <- c("SCN", "Pancreas", "Lung", "Liver", "Muscle")
 
 usethis::use_data(Mm_multitissue_LD_ALF, overwrite = TRUE)
