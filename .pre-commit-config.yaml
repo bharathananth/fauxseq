@@ -17,9 +17,7 @@ repos:
     # -   id: codemeta-description-updated
     -   id: use-tidy-description
     -   id: spell-check
-        args:
-          -   --lang=en_US
-          -   --read-only
+        args: [--lang=en_US, --read-only]
         files: '\.(Rmd|qmd|.Rd)$'
     -   id: lintr
     -   id: readme-rmd-rendered
