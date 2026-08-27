@@ -42,8 +42,9 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                      depth = 4e7,
                                      lib_size_var = c(0.8, 1.2),
                                      seed = NULL) {
-  if (!is.null(seed))
+  if (!is.null(seed)) {
     set.seed(seed)
+  }
 
   if (is.null(reps)) {
     reps <- rep_len(1, length(t))
@@ -55,7 +56,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     emp_dist <- fauxseq::Mm_multitissue_LD_ALF
   }
 
-  if (is.list(emp_dist)) {
+  if (is.list(emp_dist) && !is.data.frame(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
   }
@@ -66,13 +67,16 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   G_rhy <- (stats::runif(n_genes) <= rhy_frac)
 
   A <- matrix(min_A_effect + stats::rexp(n_genes, 1 / A_spread),
-              nrow = n_genes)
+    nrow = n_genes
+  )
   A[!G_rhy] <- 0.0
   phi <- matrix(stats::runif(n_genes) * 2 * pi * G_rhy, nrow = n_genes)
   phi[!G_rhy] <- 0
-  params <- data.frame(id = paste0("g", seq(n_genes)),
-                       A = A,
-                       phi = phi)
+  params <- data.frame(
+    id = paste0("g", seq(n_genes)),
+    A = A,
+    phi = phi
+  )
 
   t_pattern <- cos(phi) %*% cos(2 * pi * t / period) +
     sin(phi) %*% sin(2 * pi * t / period)
@@ -87,7 +91,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params$dispersion <- 1 / emp_dist$size[draw]
   size <- size[, rep(1, length(t))]
 
-  lambda <- lambda[, rep(1, N)] * 2 ^ (A[, rep(1, N)] * t_pattern)
+  lambda <- lambda[, rep(1, N)] * 2^(A[, rep(1, N)] * t_pattern)
 
   mu <- sweep(lambda, 2, colSums(lambda) / lib_size, FUN = "/")
 
@@ -98,16 +102,19 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     dimnames = list(
       id = paste0("g", seq(n_genes)),
       samples = make.names(replicate(N, paste0(
-        sample(letters, 5), collapse = ""
+        sample(letters, 5),
+        collapse = ""
       )), unique = TRUE)
     )
   )
 
   exp_design <- data.frame(time = t, row.names = colnames(counts))
 
-  list(counts = counts,
-       params = params,
-       exp_design = exp_design)
+  list(
+    counts = counts,
+    params = params,
+    exp_design = exp_design
+  )
 }
 
 #' Generate rhythmic RNA-seq count data under two conditions
@@ -172,8 +179,9 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          depth = 4e7,
                                          lib_size_var = c(0.8, 1.2),
                                          seed = NULL) {
-  if (!is.null(seed))
+  if (!is.null(seed)) {
     set.seed(seed)
+  }
 
   if (is.null(reps)) {
     reps <- rep_len(1, length(t))
@@ -185,7 +193,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     emp_dist <- fauxseq::Mm_multitissue_LD_ALF
   }
 
-  if (is.list(emp_dist)) {
+  if (is.list(emp_dist) && !is.data.frame(emp_dist)) {
     pick_emp_dist <- sample(length(emp_dist), 1)
     emp_dist <- emp_dist[[pick_emp_dist]]
   }
@@ -203,7 +211,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     DR_groups <- c("same", "gain", "loss", "change")[rep.int(seq(4), DR_counts)]
 
     A <- matrix(min_A_effect + stats::rexp(n_genes * 2, 1 / A_spread),
-                nrow = n_genes)
+      nrow = n_genes
+    )
     A[!G_rhy, ] <- 0.0
     phi <- matrix(stats::runif(n_genes * 2) * 2 * pi * G_rhy, nrow = n_genes)
     phi[!G_rhy, ] <- 0
@@ -228,10 +237,14 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
       phi_1 = phi[, 1],
       phi_2 = phi[, 2]
     )
-    colnames(params) <- c("id",
-                          paste0(rep(c("A", "phi"), each = 2),
-                                 "_",
-                                 rep(groups, 2)))
+    colnames(params) <- c(
+      "id",
+      paste0(
+        rep(c("A", "phi"), each = 2),
+        "_",
+        rep(groups, 2)
+      )
+    )
 
     params <- merge(
       params,
@@ -248,25 +261,33 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     )
   } else {
     params <- data.frame(matrix(0, nrow = n_genes, ncol = 6))
-    colnames(params) <- c("id", paste0(rep(c("A", "phi"), each = 2),
-                                       "_", rep(groups, 2)),
-                          "category")
+    colnames(params) <- c(
+      "id", paste0(
+        rep(c("A", "phi"), each = 2),
+        "_", rep(groups, 2)
+      ), "category"
+    )
     params$id <- paste0("g", seq(n_genes))
     params$category <- NA
   }
 
   G_DE <- (stats::runif(n_genes) <= DE_frac)
   DE_effects <- matrix(min_DE_effect + stats::rexp(n_genes, 1 / DE_spread),
-                       nrow = n_genes) * sign(2 * stats::runif(n_genes) - 1)
+    nrow = n_genes
+  ) * sign(2 * stats::runif(n_genes) - 1)
   DE_effects[!G_DE] <- 0.0
-  params_de <- data.frame(id = paste0("g", seq(n_genes)),
-                          DE_effect = ifelse(G_DE, DE_effects[G_DE], NA))
+  params_de <- data.frame(
+    id = paste0("g", seq(n_genes)),
+    DE_effect = ifelse(G_DE, DE_effects[G_DE], NA)
+  )
 
   params <- merge(params, params_de, by = "id", all = TRUE)
   params <- params[order(as.numeric(gsub("g", "", params$id))), ]
 
-  lib_size_fct <- stats::runif(2 * N, min = lib_size_var[1],
-                               max = lib_size_var[2])
+  lib_size_fct <- stats::runif(2 * N,
+    min = lib_size_var[1],
+    max = lib_size_var[2]
+  )
   lib_size <- lib_size_fct * depth
 
   draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
@@ -281,16 +302,19 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
 
   if (sum(G_rhy) > 0) {
     if (sum(G_DE) > 0) {
-      lambda <- (lambda[, rep(1, 2 * N)] *
-                   2 ^ (DE_effects[, rep(c(1, 2), each = N)] +
-                   A[, rep(c(1, 2), each = N)] * t_pattern))
+      lambda <- (
+        lambda[, rep(1, 2 * N)] * 2^(
+          DE_effects[, rep(c(1, 2), each = N)]
+          + A[, rep(c(1, 2), each = N)] * t_pattern)
+      )
     } else {
-      lambda <- lambda[, rep(1, 2 * N)] * 2 ^ (
-                                      A[, rep(c(1, 2), each = N)] * t_pattern)
+      lambda <- lambda[, rep(1, 2 * N)] * (
+        2^(A[, rep(c(1, 2), each = N)] * t_pattern)
+      )
     }
   } else {
     if (sum(G_DE) > 0) {
-      lambda <- lambda[, rep(1, 2 * N)] * 2 ^ DE_effects[, rep(c(1, 2), each = N)]
+      lambda <- lambda[, rep(1, 2 * N)] * 2^DE_effects[, rep(c(1, 2), each = N)]
     } else {
       lambda <- lambda[, rep(1, 2 * N)]
     }
@@ -305,7 +329,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     dimnames = list(
       id = paste0("g", seq(n_genes)),
       samples = make.names(replicate(2 * N, paste0(
-        sample(letters, 5), collapse = ""
+        sample(letters, 5),
+        collapse = ""
       )), unique = TRUE)
     )
   )
@@ -316,7 +341,9 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     row.names = colnames(counts)
   )
 
-  list(counts = counts,
-       params = params,
-       exp_design = exp_design)
+  list(
+    counts = counts,
+    params = params,
+    exp_design = exp_design
+  )
 }

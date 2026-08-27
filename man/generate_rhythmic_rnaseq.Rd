@@ -10,8 +10,8 @@ generate_rhythmic_rnaseq(
   period = 24,
   n_genes = 10000,
   rhy_frac = 0.1,
-  min_A_effect = 0.5,
-  A_spread = 1,
+  min_A_effect = 0.2,
+  A_spread = 0.5,
   emp_dist = NULL,
   depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
@@ -33,10 +33,10 @@ default seq(0, 20, 4)}
 rhythmic, by default 0.1}
 
 \item{min_A_effect}{A positive numeric scalar, minimum amplitude (in log2
-fold) of rhythmic genes, by default 0.5}
+fold) of rhythmic genes, by default 0.2}
 
 \item{A_spread}{A positive numeric scalar, mean of the exponential
-distribution of rhythmic gene amplitudes (in log2 fold), by default 1}
+distribution of rhythmic gene amplitudes (in log2 fold), by default 0.5}
 
 \item{emp_dist}{A data.frame with two columns containing the empirical mu
 (means) and empirical size (reciprocal of dispersion), by default NULL
