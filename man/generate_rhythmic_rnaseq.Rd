@@ -12,7 +12,7 @@ generate_rhythmic_rnaseq(
   rhy_frac = 0.1,
   min_A_effect = 0.2,
   A_spread = 0.5,
-  emp_dist = NULL,
+  emp_dist = "liver",
   depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
   seed = NULL
@@ -38,9 +38,10 @@ fold) of rhythmic genes, by default 0.2}
 \item{A_spread}{A positive numeric scalar, mean of the exponential
 distribution of rhythmic gene amplitudes (in log2 fold), by default 0.5}
 
-\item{emp_dist}{A data.frame with two columns containing the empirical mu
-(means) and empirical size (reciprocal of dispersion), by default NULL
-(read from one of five mouse tissue datasets at random)}
+\item{emp_dist}{A string to select from internal datasets or a data.frame
+with two columns containing the empirical mu (means) and empirical size
+(reciprocal of dispersion), by default is "liver", which reads from liver
+dataset.}
 
 \item{depth}{A positive integer, average sequencing depth of different
 samples, by default 4e7}

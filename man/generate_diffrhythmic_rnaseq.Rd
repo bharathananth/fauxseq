@@ -17,7 +17,7 @@ generate_diffrhythmic_rnaseq(
   min_DE_effect = 0.5,
   DE_spread = 0.5,
   groups = c("ctrl", "expt"),
-  emp_dist = NULL,
+  emp_dist = "liver",
   depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
   seed = NULL
@@ -60,9 +60,10 @@ distribution of DE fold changes, by default 1.0}
 \item{groups}{A character vector of length 2, labels for the two
 groups/conditions, by default c("ctrl", "expt")}
 
-\item{emp_dist}{A data.frame with two columns containing the empirical mu
-(means) and empirical size (reciprocal of dispersion), by default read from
-one of 5 mouse tissues at random.}
+\item{emp_dist}{A string to select from internal datasets or a data.frame
+with two columns containing the empirical mu (means) and empirical size
+(reciprocal of dispersion), by default is "liver", which reads from liver
+dataset.}
 
 \item{depth}{A positive integer, average sequencing depth of different
 samples, by default 4e7}

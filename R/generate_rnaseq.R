@@ -16,9 +16,10 @@
 #'   fold) of rhythmic genes, by default 0.2
 #' @param A_spread A positive numeric scalar, mean of the exponential
 #'   distribution of rhythmic gene amplitudes (in log2 fold), by default 0.5
-#' @param emp_dist A data.frame with two columns containing the empirical mu
-#'   (means) and empirical size (reciprocal of dispersion), by default NULL
-#'   (read from one of five mouse tissue datasets at random)
+#' @param emp_dist A string to select from internal datasets or a data.frame
+#'   with two columns containing the empirical mu (means) and empirical size
+#'   (reciprocal of dispersion), by default is "liver", which reads from liver
+#'   dataset.
 #' @param depth A positive integer, average sequencing depth of different
 #'   samples, by default 4e7
 #' @param lib_size_var A numeric vector of two positive elements, window of
@@ -38,7 +39,7 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                      rhy_frac = 0.1,
                                      min_A_effect = 0.2,
                                      A_spread = 0.5,
-                                     emp_dist = NULL,
+                                     emp_dist = "liver",
                                      depth = 4e7,
                                      lib_size_var = c(0.8, 1.2),
                                      seed = NULL) {
@@ -52,8 +53,16 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
     stopifnot((length(reps) == 1) || (length(reps) == length(t)))
   }
 
-  if (is.null(emp_dist)) {
-    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
+  if (is.character(emp_dist)) {
+    emp_dist <- switch(emp_dist,
+      "liver" = fauxseq::Mm_liver_LD_NC,
+      "multitissue" = fauxseq::Mm_multitissue_LD_ALF,
+      fauxseq::Mm_liver_LD_NC
+    )
+  } else if (!is.data.frame(emp_dist) &&
+    !(is.list(emp_dist) && length(emp_dist) > 0 &&
+      all(vapply(emp_dist, is.data.frame, logical(1))))) {
+    stop("Invalid dispersion dataset")
   }
 
   if (is.list(emp_dist) && !is.data.frame(emp_dist)) {
@@ -148,9 +157,10 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 #'   distribution of DE fold changes, by default 1.0
 #' @param groups A character vector of length 2, labels for the two
 #'   groups/conditions, by default c("ctrl", "expt")
-#' @param emp_dist A data.frame with two columns containing the empirical mu
-#'   (means) and empirical size (reciprocal of dispersion), by default read from
-#'   one of 5 mouse tissues at random.
+#' @param emp_dist A string to select from internal datasets or a data.frame
+#'   with two columns containing the empirical mu (means) and empirical size
+#'   (reciprocal of dispersion), by default is "liver", which reads from liver
+#'   dataset.
 #' @param depth A positive integer, average sequencing depth of different
 #'   samples, by default 4e7
 #' @param lib_size_var A numeric vector of two positive elements, window of
@@ -175,7 +185,7 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          min_DE_effect = 0.5,
                                          DE_spread = 0.5,
                                          groups = c("ctrl", "expt"),
-                                         emp_dist = NULL,
+                                         emp_dist = "liver",
                                          depth = 4e7,
                                          lib_size_var = c(0.8, 1.2),
                                          seed = NULL) {
@@ -189,8 +199,16 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
     stopifnot((length(reps) == 1) || (length(reps) == length(t)))
   }
 
-  if (is.null(emp_dist)) {
-    emp_dist <- fauxseq::Mm_multitissue_LD_ALF
+  if (is.character(emp_dist)) {
+    emp_dist <- switch(emp_dist,
+      "liver" = fauxseq::Mm_liver_LD_NC,
+      "multitissue" = fauxseq::Mm_multitissue_LD_ALF,
+      fauxseq::Mm_liver_LD_NC
+    )
+  } else if (!is.data.frame(emp_dist) &&
+    !(is.list(emp_dist) && length(emp_dist) > 0 &&
+      all(vapply(emp_dist, is.data.frame, logical(1))))) {
+    stop("Invalid dispersion dataset")
   }
 
   if (is.list(emp_dist) && !is.data.frame(emp_dist)) {
