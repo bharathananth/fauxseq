@@ -1,11 +1,11 @@
 Package: fauxseq
 Type: Package
-Title: A synthetic timeseries RNA-seq data generator
+Title: A Synthetic Timeseries RNA-seq Data Generator
 Version: 0.1.0
 Authors@R: c(
     person("Bharath", "Ananthasubramaniam", , "bharath.ananthasubramaniam@hu-berlin.de", role = c("aut", "cre", "cph"))
   )
-Description: This package can generate synthetic timeseries RNA-seq data with a fraction of rhythmic genes and empirical relationship between mean expression and variability across replicates of genes.
+Description: This package generates synthetic time-series RNA-seq data containing a user-specified fraction of rhythmic genes, while preserving the empirical relationship between mean gene expression and variability observed across biological replicates. It is the R counterpart to pyfauxseq, a Python package providing the same functionality.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
