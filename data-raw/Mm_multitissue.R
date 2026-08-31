@@ -13,7 +13,7 @@ tissues <- str_extract(colnames(data), "^[A-Za-z]+") |> unique()
 
 tissue_data <- map(tissues, \(tis) {
   data[, grepl(tis, names(data))] |>
-    filter(if_any(everything(), \(x) x > 0))
+    filter(if_all(everything(), \(x) x > 0))
 })
 
 tissue_stats <- map(tissue_data, \(x) {
