@@ -27,6 +27,8 @@
 #'   1.2)
 #' @param seed A positive integer, seed to ensure reproducible datasets, by
 #'   default NULL
+#' @param mean_disp_trend A boolean, whether data should possess mean-dispersion
+#'   trend, by default TRUE
 #'
 #' @returns A list containing an integer count matrix, a data.frame of feature
 #'   properties and a data.frame of the sample data.
@@ -42,7 +44,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                      emp_dist = "liver",
                                      depth = 4e7,
                                      lib_size_var = c(0.8, 1.2),
-                                     seed = NULL) {
+                                     seed = NULL,
+                                     mean_disp_trend = TRUE) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -96,6 +99,9 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
   draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
   lambda <- matrix(emp_dist$mu[draw], nrow = n_genes)
   params$mu <- emp_dist$mu[draw]
+  if (!mean_disp_trend) {
+    draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
+  }
   size <- matrix(emp_dist$size[draw], nrow = n_genes)
   params$dispersion <- 1 / emp_dist$size[draw]
   size <- size[, rep(1, length(t))]
@@ -168,6 +174,8 @@ generate_rhythmic_rnaseq <- function(t = seq(0, 20, 4),
 #'   1.2)
 #' @param seed A positive integer, seed to ensure reproducible datasets, by
 #'   default NULL
+#' @param mean_disp_trend A boolean, whether data should possess mean-dispersion
+#'   trend, by default TRUE
 #'
 #' @returns A list containing a integer count matrix, a data.frame of feature
 #'   properties and a data.frame of the sample metadata.
@@ -188,7 +196,8 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
                                          emp_dist = "liver",
                                          depth = 4e7,
                                          lib_size_var = c(0.8, 1.2),
-                                         seed = NULL) {
+                                         seed = NULL,
+                                         mean_disp_trend = TRUE) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -314,6 +323,9 @@ generate_diffrhythmic_rnaseq <- function(t = seq(0, 20, 4),
   params$dispersion <- 1 / emp_dist$size[draw]
   size <- size[, rep(1, 2 * N)]
 
+  if (!mean_disp_trend) {
+    draw <- sample(nrow(emp_dist), n_genes, replace = TRUE)
+  }
   lambda <- matrix(emp_dist$mu[draw], nrow = n_genes)
   params$mu <- emp_dist$mu[draw]
   DE_effects <- cbind(rep(1, n_genes), DE_effects)

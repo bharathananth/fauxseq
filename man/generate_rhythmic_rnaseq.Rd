@@ -15,7 +15,8 @@ generate_rhythmic_rnaseq(
   emp_dist = "liver",
   depth = 4e+07,
   lib_size_var = c(0.8, 1.2),
-  seed = NULL
+  seed = NULL,
+  mean_disp_trend = TRUE
 )
 }
 \arguments{
@@ -52,6 +53,9 @@ variability of sequencing depth of samples about 'depth', by default c(0.8,
 
 \item{seed}{A positive integer, seed to ensure reproducible datasets, by
 default NULL}
+
+\item{mean_disp_trend}{A boolean, whether data should possess mean-dispersion
+trend, by default TRUE}
 }
 \value{
 A list containing an integer count matrix, a data.frame of feature

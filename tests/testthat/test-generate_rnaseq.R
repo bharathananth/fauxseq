@@ -56,11 +56,13 @@ test_that("parameters satisfy conditions", {
     n_genes = integer_bounded(2, 20000, len = 1),
     rhy_frac = double_bounded(0, 1.0, len = 1),
     min_A_effect = double_bounded(0, 2.0, len = 1),
-    property = function(n_genes, rhy_frac, min_A_effect) {
+    mean_disp_trend = logical_(len = 1),
+    property = function(n_genes, rhy_frac, min_A_effect, mean_disp_trend) {
       sim_data <- generate_rhythmic_rnaseq(
         n_genes = n_genes,
         rhy_frac = rhy_frac,
-        min_A_effect = min_A_effect
+        min_A_effect = min_A_effect,
+        mean_disp_trend = mean_disp_trend
       )
       params <- sim_data$params
       expect_shape(params, dim = c(n_genes, 5))
@@ -151,14 +153,17 @@ test_that("parameters satisfy conditions", {
     DE_frac = double_bounded(0, 1.0, len = 1),
     min_A_effect = double_bounded(0, 2.0, len = 1),
     min_DE_effect = double_bounded(0, 2.0, len = 1),
+    mean_disp_trend = logical_(len = 1),
     property = function(n_genes, rhy_frac, DE_frac,
-                        min_A_effect, min_DE_effect) {
+                        min_A_effect, min_DE_effect,
+                        mean_disp_trend) {
       sim_data <- generate_diffrhythmic_rnaseq(
         n_genes = n_genes,
         rhy_frac = rhy_frac,
         DE_frac = DE_frac,
         min_A_effect = min_A_effect,
-        min_DE_effect = min_DE_effect
+        min_DE_effect = min_DE_effect,
+        mean_disp_trend = mean_disp_trend
       )
       params <- sim_data$params
       expect_shape(params, dim = c(n_genes, 9))
