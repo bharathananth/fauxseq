@@ -1,0 +1,48 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# fauxseq
+<!-- badges: start -->
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+<!-- badges: end -->
+
+A Synthetic Timeseries RNA-seq Data Generator
+
+## How to install fauxseq
+You can install the development version of fauxseq from [GitHub](https://github.com/) with:
+``` r
+# install.packages("pak")
+pak::pak("bharathananth/fauxseq")
+```
+
+## What fauxseq does
+This package can generate synthetic timeseries RNA-seq data with a fraction of rhythmic genes and empirical relationship between mean expression and variability across replicates of genes.
+
+`fauxseq` improves upon previous tools as follows:
+ - generates negative-binomial count data with empirically-estimated mean-dispersion properties.
+ - generates data with either differential expression or differential rhythmicity or both.
+
+## Get started with fauxseq
+
+```{r cars}
+library(fauxseq)
+sim_data <- generate_rhythmic_rnaseq()
+head(sim_data$counts) # count data
+head(sim_data$params) # parameters of the rhythmic genes
+head(sim_data$exp_design) # time labels of each sample (columns) of count data
+```
+
+## How to cite fauxseq
+Please cite this software using CITATION.CFF or the "Cite this repository" link in the right sidebar.

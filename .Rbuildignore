@@ -1,6 +1,7 @@
 ^.*\.Rproj$
-^\.Rproj\.user$
 ^LICENSE\.md$
-^data-raw$
+^README\.Rmd$
+^\.Rproj\.user$
 ^\.lintr$
 ^\.pre-commit-config\.yaml$
+^data-raw$
